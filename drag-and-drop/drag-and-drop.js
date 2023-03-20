@@ -1,10 +1,10 @@
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("drag-and-drop");
 const context = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.height = window.innerHeight/2;
 
-canvas.style.border = "5px solid red";
+canvas.style.border = "2px solid red";
 canvas.style.boxSizing = "border-box";
 
 let canvas_width = canvas.width;
