@@ -12,20 +12,23 @@ canvas.height = window.innerHeight - 50;
 const start = document.getElementById('start');
 const stop = document.getElementById('stop');
 const reset = document.getElementById('reset');
+const add = document.getElementById('add');
 
 start.addEventListener("click", startAnimation);
 stop.addEventListener("click", stopAnimation);
 reset.addEventListener("click", resetAnimation);
+add.addEventListener("click", addBall);
 
 let animation;
 
 //* ======= initial variables ======== *//
 
 // global
-const accY = .1;
+const accY = .15;
 const accX = 0;
 const active = false;
-const drag = .0001;
+const drag = .001;
+const friction = .1;
 
 // ball variables
 const initX = canvas.width / 2;
@@ -40,6 +43,7 @@ const ballsInit = [
     radius: 10,
     color: 'black',
     elasticity: .75,
+    rolling: false
   },
   {
     x: initX + 200,
@@ -49,6 +53,7 @@ const ballsInit = [
     radius: 10,
     color: 'red',
     elasticity: .75,
+    rolling: false
   },
 ]
 
@@ -69,20 +74,24 @@ function collideX(ball, canvas) {
 
 //TODO: render
 function render() {
+  // console.log('render')
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (let ball of balls) {
     ctx.fillStyle = ball.color;
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);
-    ctx.stroke();
     ctx.fill();
   }
+    ctx.stroke();
 }
 
 //TODO: reset
 function resetAnimation() {
-  for (let i=0; i<balls.length; i++) {
+  console.log('reset');
+  console.log('balls:', balls);
+  console.log('ballsinit:', ballsInit)
+  for (let i = 0; i < balls.length; i++) {
     balls[i] = ballsInit[i];
   }
   cancelAnimationFrame(animation);
@@ -95,6 +104,37 @@ function applyDrag(ball) {
   ball.velX = (1 - drag) * ball.velX;
   ball.velY = (1 - drag) * ball.velY;
 }
+
+function applyFriction(ball) {
+  ball.velX = (1 - friction) * ball.velX;
+}
+
+function makeRandom(min, max) {
+  return Math.random() * (max - min) + min
+}
+
+function addBall() {
+
+  const newBall = {
+    x: makeRandom(50, canvas.width - 50),
+    y: makeRandom(50, 400),
+    velX: makeRandom(-10, 10),
+    velY: makeRandom(-10, 10),
+    radius: makeRandom(5, 20),
+    color: `rgb(${makeRandom(1, 255)}, ${makeRandom(1, 255)}, ${makeRandom(1, 255)})`,
+    elasticity: makeRandom(.2, .9),
+    rolling: false,
+  };
+
+  console.log(newBall.color);
+
+  balls.push(newBall);
+  ballsInit.push(newBall);
+
+  render();
+}
+
+
 
 //* ========= animate ========= *//
 
@@ -128,11 +168,16 @@ function startAnimation() {
     }
 
     applyDrag(ball);
+
+    // if velY very small and ball is very near the floor, it is rolling => apply friction
+    if (Math.abs(ball.velY) <= .1 && Math.abs(ball.y - (canvas.height - ball.radius)) <= 1) {
+      applyFriction(ball);
+    }
   }
 
   // draw ball
   render();
-
+  // next frame
   animation = requestAnimationFrame(startAnimation);
 }
 
@@ -140,7 +185,5 @@ function stopAnimation() {
   console.log('stop');
   cancelAnimationFrame(animation);
 }
-
-
 
 render()
