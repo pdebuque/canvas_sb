@@ -31,19 +31,26 @@ let animation;
 
 // global
 const g = .2;
+const longpress = 100;
 
-const character = {
-  height: 30,
-  width: 10,
-  x: canvas.width / 2,
+const init = {
+  x: 100,
   y: 0,
   velY: 0,
   velX: 0
 }
 
+const character = {
+  height: 30,
+  width: 10,
+  x: init.x,
+  y: init.y,
+  velY: init.velY,
+  velX: init.velX
+}
+
 character.y = canvas.height - character.height
 
-data.innerHTML = `x: ${character.x}; y: ${character.y}; velY: ${character.velY}; velX: ${character.velX}`
 
 //* ============= keyboard inputs =========== *//
 // a, d, space
@@ -51,14 +58,14 @@ function handleKeyDown(e) {
   // console.log(e);
   switch (e.key) {
     case 'a':
-      character.velX = -1
+      character.velX = -3
       break;
     case 'd':
-      character.velX = 1
+      character.velX = 3
       break;
     case ' ':
       if (e.repeat) return;
-      character.velY = -5;
+      character.velY = -10;
       break;
     default:
       return
@@ -83,11 +90,12 @@ function handleKeyUp(e) {
 function collideY(char, canv) {
   if (char.y >= canv.height - char.height) {
     char.y = canv.height - char.height;
-    char.velY = -char.velY;
+    char.velY = 0;
+    // char.velY = -char.velY;
   }
   if (char.y <= 0) {
     char.y = 0;
-    char.velY = -char.velY;
+    // char.velY = -char.velY;
   }
 }
 
@@ -104,6 +112,7 @@ function collideX(char, canv) {
 //* ========= animate =========== *//
 
 function beginGame() {
+  if (animation) cancelAnimationFrame(animation); // safeguard against multiple instancesd
   animation = requestAnimationFrame(startAnimation);
 }
 
@@ -111,9 +120,9 @@ function stopGame() {
   cancelAnimationFrame(animation)
 }
 
-function resetGame(){
+function resetGame() {
   cancelAnimationFrame(animation);
-  character.x=canvas.width/2;
+  character.x = canvas.width / 2;
   character.y = canvas.height - character.height;
   character.velX = 0;
   character.velY = 0;
@@ -124,9 +133,10 @@ function startAnimation() {
 
   character.x += character.velX;
   character.y += character.velY;
-  character.y += g;
+  character.velY += g;
 
-
+  collideX(character, canvas);
+  collideY(character, canvas)
 
   render()
   animation = requestAnimationFrame(startAnimation);
@@ -136,6 +146,8 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'green'
   ctx.fillRect(character.x, character.y, character.width, character.height);
+
+  data.innerHTML = `x: ${character.x}; y: ${character.y}; velY: ${character.velY.toFixed(0)}; velX: ${character.velX}`
 }
 
 render();
